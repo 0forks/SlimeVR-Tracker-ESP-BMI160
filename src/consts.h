@@ -73,6 +73,7 @@
 
 #define BMI160_MAG_TYPE_HMC 1
 #define BMI160_MAG_TYPE_QMC 2
+#define BMI160_MAG_TYPE_BMM150 3
 
 #ifdef ESP8266
   #define HARDWARE_MCU 1

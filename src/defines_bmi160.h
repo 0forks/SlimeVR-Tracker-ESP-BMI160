@@ -38,6 +38,7 @@
 // Pick one:
 #define BMI160_MAG_TYPE BMI160_MAG_TYPE_HMC
 // #define BMI160_MAG_TYPE BMI160_MAG_TYPE_QMC
+// #define BMI160_MAG_TYPE BMI160_MAG_TYPE_BMM150
 
 // Use VQF instead of mahony sensor fusion.
 // Features: rest bias estimation, magnetic distortion rejection.
