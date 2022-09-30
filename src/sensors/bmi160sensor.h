@@ -66,13 +66,19 @@ constexpr float BMI160_ODR_ACC_HZ = 12.5f * (1 << (BMI160_ACCEL_RATE - 5));
 constexpr float BMI160_ODR_GYR_MICROS = BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_GYR_HZ * 1e6f);
 constexpr float BMI160_ODR_ACC_MICROS = BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_ACC_HZ * 1e6f);
 #if !USE_6_AXIS
-// note: this value only sets polling and fusion update rate - HMC is internally sampled at 75hz, QMC at 200hz
-#define BMI160_MAG_RATE BMI160_MAG_RATE_50HZ
-constexpr float BMI160_ODR_MAG_HZ = (25.0f/32.0f) * (1 << (BMI160_MAG_RATE - 1));
-constexpr float BMI160_ODR_MAG_MICROS = BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_MAG_HZ * 1e6f);
+    #if BMI160_MAG_TYPE == BMI160_MAG_TYPE_BMM150
+        // BMM is sampled at 25hz
+        #define BMI160_MAG_RATE BMI160_MAG_RATE_25HZ
+    #else
+        // note: this value only sets polling and fusion update rate;
+        // HMC is internally sampled at 75hz, QMC at 200hz
+        #define BMI160_MAG_RATE BMI160_MAG_RATE_50HZ
+    #endif
+    constexpr float BMI160_ODR_MAG_HZ = (25.0f/32.0f) * (1 << (BMI160_MAG_RATE - 1));
+    constexpr float BMI160_ODR_MAG_MICROS = BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_MAG_HZ * 1e6f);
 #else
-constexpr float BMI160_ODR_MAG_HZ = 0;
-constexpr float BMI160_ODR_MAG_MICROS = 0;
+    constexpr float BMI160_ODR_MAG_HZ = 0;
+    constexpr float BMI160_ODR_MAG_MICROS = 0;
 #endif
 
 constexpr uint16_t BMI160_SETTINGS_MAX_ODR_HZ = max(max(BMI160_ODR_GYR_HZ, BMI160_ODR_ACC_HZ), BMI160_ODR_MAG_HZ);
@@ -167,6 +173,7 @@ class BMI160Sensor : public Sensor {
         ~BMI160Sensor(){};
         void initHMC(BMI160MagRate magRate);
         void initQMC(BMI160MagRate magRate);
+        void initBMM(BMI160MagRate magRate);
 
         void motionSetup() override final;
         void motionLoop() override final;

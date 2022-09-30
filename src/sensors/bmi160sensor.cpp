@@ -26,6 +26,7 @@
 #include "GlobalVars.h"
 #include <hmc5883l.h>
 #include <qmc5883l.h>
+#include <bmm150.h>
 #include <map>
 
 void BMI160Sensor::initHMC(BMI160MagRate magRate) {
@@ -92,6 +93,40 @@ void BMI160Sensor::initQMC(BMI160MagRate magRate) {
     imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_DATA_MODE_6);
 }
 
+void BMI160Sensor::initBMM(BMI160MagRate magRate) {
+    /* Configure MAG interface and setup mode */
+    /* Set MAG interface normal power mode */
+    imu.setRegister(BMI160_RA_CMD, BMI160_CMD_MAG_MODE_NORMAL);
+    delay(60);
+
+    imu.setRegister(BMI160_RA_CMD, BMI160_EN_PULL_UP_REG_1);
+    imu.setRegister(BMI160_RA_CMD, BMI160_EN_PULL_UP_REG_2);
+    imu.setRegister(BMI160_RA_CMD, BMI160_EN_PULL_UP_REG_3);
+    imu.setRegister(BMI160_7F, BMI160_EN_PULL_UP_REG_4);
+    imu.setRegister(BMI160_7F, BMI160_EN_PULL_UP_REG_5);
+
+    /* Enable MAG interface */
+    imu.setRegister(BMI160_RA_IF_CONF, BMI160_IF_CONF_MODE_PRI_AUTO_SEC_MAG);
+    delay(1);
+
+    imu.setMagDeviceAddress(BMM_DEVADDR);
+    delay(3);
+    imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_SETUP_MODE);
+    delay(3);
+
+    /* Configure BMM150 Sensor */
+    imu.setMagRegister(BMM_RA_POWER, BMM_POWER_FLAG_SLEEP | BMM_POWER_FLAG_RESET);
+    delay(3);
+    imu.setMagRegister(BMM_RA_REPXY, BMM_REPXY_ENHANCED);
+    imu.setMagRegister(BMM_RA_REPZ, BMM_REPZ_ENHANCED);
+    imu.setMagRegister(BMM_RA_CONTROL, BMM_CFG_DATA_RATE_25HZ | BMM_CFG_OPMODE_NORMAL);
+
+    imu.setRegister(BMI160_RA_MAG_IF_2_READ_RA, BMM_RA_DATA);
+    imu.setRegister(BMI160_RA_MAG_CONF, magRate);
+    delay(3);
+    imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_DATA_MODE_6);
+}
+
 void BMI160Sensor::motionSetup() {
     // initialize device
     imu.initialize(
@@ -108,6 +143,8 @@ void BMI160Sensor::motionSetup() {
             initHMC(BMI160_MAG_RATE);
         #elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC
             initQMC(BMI160_MAG_RATE);
+        #elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_BMM150
+            initBMM(BMI160_MAG_RATE);
         #else
             static_assert(false, "Mag is enabled but BMI160_MAG_TYPE not set in defines");
         #endif
@@ -1112,5 +1149,14 @@ void BMI160Sensor::getMagnetometerXYZFromBuffer(uint8_t* data, int16_t* x, int16
         *x = ((int16_t)data[1] << 8) | data[0];
         *y = ((int16_t)data[3] << 8) | data[2];
         *z = ((int16_t)data[5] << 8) | data[4];
+    #elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_BMM150
+        // bmm150:
+        // X: 0 lsb (5 bit) 1 msb (8 bit) - 13 bit
+        // Y: 0 lsb (5 bit) 1 msb (8 bit) - 13 bit
+        // Z: 0 lsb (7 bit) 1 msb (8 bit) - 15 bit
+        // XYZ order
+        *x = (((int16_t)data[1] << 8) | data[0]) >> 3;
+        *y = (((int16_t)data[3] << 8) | data[2]) >> 3;
+        *z = (((int16_t)data[5] << 8) | data[4]) >> 1;
     #endif
 }
