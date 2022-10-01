@@ -103,7 +103,9 @@ void BMI160Sensor::initBMM(BMI160MagRate magRate) {
     delay(3);
 
     /* Configure BMM150 Sensor */
-    imu.setMagRegister(BMM_RA_POWER, BMM_POWER_FLAG_SLEEP | BMM_POWER_FLAG_RESET);
+    imu.setMagRegister(BMM_RA_POWER, BMM_POWER_FLAG_RESET);
+    delay(3);
+    imu.setMagRegister(BMM_RA_POWER, BMM_POWER_FLAG_SLEEP);
     delay(3);
     imu.setMagRegister(BMM_RA_REPXY, BMM_REPXY_ENHANCED);
     imu.setMagRegister(BMM_RA_REPZ, BMM_REPZ_ENHANCED);
