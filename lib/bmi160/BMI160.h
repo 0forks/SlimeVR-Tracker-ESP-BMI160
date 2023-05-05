@@ -343,11 +343,11 @@ typedef enum {
 #define BMI160_FIFO_A_LEN 6
 
 #define BMI160_RA_ERR                        0x02
-#define BMI160_ERR_MASK_MAG_DRDY_ERR         0x10000000
-#define BMI160_ERR_MASK_DROP_CMD_ERR         0x01000000
-#define BMI160_ERR_MASK_I2C_FAIL             0x00100000
-#define BMI160_ERR_MASK_ERROR_CODE           0x00011110
-#define BMI160_ERR_MASK_CHIP_NOT_OPERABLE    0x00000001
+#define BMI160_ERR_MASK_MAG_DRDY_ERR         0b10000000
+#define BMI160_ERR_MASK_DROP_CMD_ERR         0b01000000
+#define BMI160_ERR_MASK_I2C_FAIL             0b00100000
+#define BMI160_ERR_MASK_ERROR_CODE           0b00011110
+#define BMI160_ERR_MASK_CHIP_NOT_OPERABLE    0b00000001
 
 /**
  * Interrupt Latch Mode options
